@@ -3,6 +3,7 @@ require_once '../config/database.php';
 require_once '../models/Patient.php';
 require_once '../models/Medecin.php';
 require_once '../models/Admin.php';
+require_once '../includes/session.php';
 
 class Auth {
     private $database;
@@ -29,21 +30,21 @@ class Auth {
             // Vérifier le mot de passe
             if(password_verify($password, $patient->password)) {
                 // Mot de passe correct, créer la session
-                $this->createSession($patient->id, $patient->nom, $patient->prenom, $patient->role);
+                $this->createSession($patient->id, $patient->nom, $patient->prenom, $patient->email, $patient->role);
                 return true;
             }
         } elseif($medecin->emailExists()) {
             // Vérifier le mot de passe
             if(password_verify($password, $medecin->password)) {
                 // Mot de passe correct, créer la session
-                $this->createSession($medecin->id, $medecin->nom, $medecin->prenom, $medecin->role);
+                $this->createSession($medecin->id, $medecin->nom, $medecin->prenom, $medecin->email, $medecin->role);
                 return true;
             }
         } elseif($admin->emailExists()) {
             // Vérifier le mot de passe
             if(password_verify($password, $admin->password)) {
                 // Mot de passe correct, créer la session
-                $this->createSession($admin->id, $admin->nom, $admin->prenom, $admin->role);
+                $this->createSession($admin->id, $admin->nom, $admin->prenom, $admin->email, $admin->role);
                 return true;
             }
         }
@@ -52,25 +53,27 @@ class Auth {
     }
     
     // Méthode pour créer une session
-    private function createSession($user_id, $nom, $prenom, $role) {
-        // Démarrer la session
-        if(session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+    private function createSession($user_id, $nom, $prenom, $email, $role) {
+        // Ne plus démarrer la session ici car elle est déjà démarrée dans le fichier session.php
         
-        // Stocker les informations de l'utilisateur dans la session
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['nom'] = $nom;
-        $_SESSION['prenom'] = $prenom;
-        $_SESSION['role'] = $role;
-        $_SESSION['last_activity'] = time();
+        // Utiliser la fonction initSession si disponible
+        if (function_exists('initSession')) {
+            initSession($user_id, $role, $nom, $prenom, $email, 'standard');
+        } else {
+            // Fallback - Stocker les informations de l'utilisateur dans la session
+            $_SESSION['user_id'] = $user_id;
+            $_SESSION['nom'] = $nom;
+            $_SESSION['prenom'] = $prenom;
+            $_SESSION['email'] = $email;
+            $_SESSION['role'] = $role;
+            $_SESSION['auth_method'] = 'standard';
+            $_SESSION['last_activity'] = time();
+        }
     }
     
     // Méthode pour vérifier si l'utilisateur est connecté
     public function isLoggedIn() {
-        if(session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        // Ne plus démarrer la session ici car elle est déjà démarrée dans le fichier session.php
         
         // Vérifier si l'ID utilisateur existe dans la session et si la session n'a pas expiré
         if(isset($_SESSION['user_id']) && isset($_SESSION['last_activity'])) {
@@ -90,9 +93,7 @@ class Auth {
     
     // Méthode pour vérifier le rôle de l'utilisateur
     public function checkRole($required_role) {
-        if(session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        // Ne plus démarrer la session ici car elle est déjà démarrée dans le fichier session.php
         
         if(isset($_SESSION['role']) && $_SESSION['role'] == $required_role) {
             return true;
@@ -103,15 +104,18 @@ class Auth {
     
     // Méthode pour déconnecter l'utilisateur
     public function logout() {
-        if(session_status() == PHP_SESSION_NONE) {
-            session_start();
+        // Ne plus démarrer la session ici car elle est déjà démarrée dans le fichier session.php
+        
+        // Utiliser la fonction de déconnexion du fichier session.php si disponible
+        if (function_exists('logout')) {
+            logout();
+        } else {
+            // Fallback - Détruire toutes les variables de session
+            $_SESSION = array();
+            
+            // Détruire la session
+            session_destroy();
         }
-        
-        // Détruire toutes les variables de session
-        $_SESSION = array();
-        
-        // Détruire la session
-        session_destroy();
     }
     
     // Méthode pour initier la réinitialisation du mot de passe
