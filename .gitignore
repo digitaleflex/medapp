@@ -1,0 +1,47 @@
+# Dépendances Composer
+/vendor/
+composer.lock
+
+# Fichiers de configuration d'environnement
+.env
+.env.local
+.env.*.local
+
+# Fichiers de configuration IDE/éditeurs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.DS_Store
+
+# Fichiers de logs et cache
+/logs/
+/cache/
+*.log
+.phpunit.result.cache
+
+# Fichiers de configuration spécifiques
+config/database.local.php
+
+# Fichiers de téléchargement
+/uploads/
+/public/uploads/
+
+# Fichiers temporaires
+/tmp/
+*.tmp
+*.swp
+*.bak
+*.sql.gz
+
+# Certificats et clés de sécurité
+*.pem
+*.key
+*.crt
+
+# Build assets
+/node_modules/
+/public/build/
+npm-debug.log
+yarn-error.log 

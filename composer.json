@@ -1,0 +1,20 @@
+{
+    "name": "medconnect/medapp",
+    "description": "Application de gestion de consultations médicales",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "authors": [
+        {
+            "name": "MedConnect Team"
+        }
+    ],
+    "minimum-stability": "stable"
+} 
