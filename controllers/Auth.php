@@ -14,61 +14,68 @@ class Auth {
         $this->db = $this->database->getConnection();
     }
     
-    // Méthode pour gérer l'authentification
+    /**
+     * Connexion de l'utilisateur
+     *
+     * @param string $email Email de l'utilisateur
+     * @param string $password Mot de passe de l'utilisateur
+     * @return bool Succès ou échec de la connexion
+     */
     public function login($email, $password) {
-        $patient = new Patient($this->db);
-        $patient->email = $email;
+        // Vérifier que les données sont non vides
+        if (empty($email) || empty($password)) {
+            return false;
+        }
         
-        $medecin = new Medecin($this->db);
-        $medecin->email = $email;
-        
-        $admin = new Admin($this->db);
-        $admin->email = $email;
-        
-        // Vérifier si l'utilisateur existe dans l'une des tables
-        if($patient->emailExists()) {
-            // Vérifier le mot de passe
-            if(password_verify($password, $patient->password)) {
-                // Mot de passe correct, créer la session
-                $this->createSession($patient->id, $patient->nom, $patient->prenom, $patient->email, $patient->role);
-                return true;
+        try {
+            // Rechercher l'utilisateur dans la base de données
+            $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email');
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Vérifier le mot de passe
+                if (password_verify($password, $user['password'])) {
+                    // Initialiser la session
+                    if (function_exists('initSession')) {
+                        initSession($user['id'], $user['role'], $user['nom'], $user['prenom'], $user['email'], 'standard');
+                    } else {
+                        // Configuration de secours
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['role'] = $user['role'];
+                        $_SESSION['nom'] = $user['nom'];
+                        $_SESSION['prenom'] = $user['prenom'];
+                        $_SESSION['email'] = $user['email'];
+                        $_SESSION['auth_method'] = 'standard';
+                        $_SESSION['last_activity'] = time();
+                    }
+                    
+                    // Définir la redirection selon le rôle
+                    switch ($user['role']) {
+                        case 'admin':
+                            $_SESSION['redirect_url'] = 'views/admin/dashboard.php';
+                            break;
+                        case 'medecin':
+                            $_SESSION['redirect_url'] = 'views/medecin/dashboard.php';
+                            break;
+                        case 'patient':
+                            $_SESSION['redirect_url'] = 'views/patient/dashboard.php';
+                            break;
+                        default:
+                            $_SESSION['redirect_url'] = 'index.php';
+                            break;
+                    }
+                    
+                    return true;
+                }
             }
-        } elseif($medecin->emailExists()) {
-            // Vérifier le mot de passe
-            if(password_verify($password, $medecin->password)) {
-                // Mot de passe correct, créer la session
-                $this->createSession($medecin->id, $medecin->nom, $medecin->prenom, $medecin->email, $medecin->role);
-                return true;
-            }
-        } elseif($admin->emailExists()) {
-            // Vérifier le mot de passe
-            if(password_verify($password, $admin->password)) {
-                // Mot de passe correct, créer la session
-                $this->createSession($admin->id, $admin->nom, $admin->prenom, $admin->email, $admin->role);
-                return true;
-            }
+        } catch (PDOException $e) {
+            Config::logError("Erreur de connexion: " . $e->getMessage());
         }
         
         return false;
-    }
-    
-    // Méthode pour créer une session
-    private function createSession($user_id, $nom, $prenom, $email, $role) {
-        // Ne plus démarrer la session ici car elle est déjà démarrée dans le fichier session.php
-        
-        // Utiliser la fonction initSession si disponible
-        if (function_exists('initSession')) {
-            initSession($user_id, $role, $nom, $prenom, $email, 'standard');
-        } else {
-            // Fallback - Stocker les informations de l'utilisateur dans la session
-            $_SESSION['user_id'] = $user_id;
-            $_SESSION['nom'] = $nom;
-            $_SESSION['prenom'] = $prenom;
-            $_SESSION['email'] = $email;
-            $_SESSION['role'] = $role;
-            $_SESSION['auth_method'] = 'standard';
-            $_SESSION['last_activity'] = time();
-        }
     }
     
     // Méthode pour vérifier si l'utilisateur est connecté

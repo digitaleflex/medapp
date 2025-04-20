@@ -4,8 +4,54 @@
  * Inclut les paramètres de base de données et les fonctions de connexion sécurisée
  */
 
+// Définir le mode de débogage
+define('DEBUG_MODE', true);
+
+// Charger les variables d'environnement depuis le fichier .env
+function loadEnv() {
+    $envFile = __DIR__ . '/../.env';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            // Ignorer les commentaires
+            if (strpos(trim($line), '#') === 0) {
+                continue;
+            }
+            
+            // Traiter les lignes avec le format KEY=VALUE
+            if (strpos($line, '=') !== false) {
+                list($name, $value) = explode('=', $line, 2);
+                $name = trim($name);
+                $value = trim($value);
+                
+                // Enlever les guillemets si présents
+                if (strpos($value, '"') === 0 && strrpos($value, '"') === strlen($value) - 1) {
+                    $value = substr($value, 1, -1);
+                } elseif (strpos($value, "'") === 0 && strrpos($value, "'") === strlen($value) - 1) {
+                    $value = substr($value, 1, -1);
+                }
+                
+                // Définir la variable d'environnement
+                putenv("{$name}={$value}");
+                $_ENV[$name] = $value;
+            }
+        }
+    }
+}
+
+// Fonction pour récupérer une variable d'environnement
+function env($key, $default = null) {
+    $value = getenv($key);
+    
+    if ($value === false) {
+        return $default;
+    }
+    
+    return $value;
+}
+
 // Charger les variables d'environnement
-require_once __DIR__ . '/../includes/env_loader.php';
+loadEnv();
 
 // Activation de la gestion stricte des erreurs
 error_reporting(E_ALL);
@@ -155,6 +201,11 @@ class Config {
             $logMessage = "[{$timestamp}] {$message}" . PHP_EOL;
             
             error_log($logMessage, 3, $logPath);
+        }
+        
+        // En mode debug, afficher les erreurs dans la console
+        if (defined('DEBUG_MODE') && DEBUG_MODE) {
+            error_log($message);
         }
     }
 }
