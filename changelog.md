@@ -89,7 +89,23 @@ $prenom = $_SESSION['prenom'];
 $role = $_SESSION['role'];
 ```
 
-#### Prochaines Étapes Prévues
+### Mises à jour (21/04/2025)
+
+#### Changement de Framework CSS
+- Remplacement de Bootstrap par Tailwind CSS dans toutes les vues
+- Interface utilisateur plus moderne et cohérente
+- Pages spécifiques au rôle avec accents de couleur différents (bleu pour les patients, vert pour les médecins)
+
+#### Configuration du Projet
+- Ajout de `composer.json` pour la gestion des dépendances
+- Ajout de `.gitignore` pour exclure les fichiers non nécessaires
+- Ajout de README.md avec instructions d'installation
+
+#### Mise à jour des CDN
+- Utilisation de la version recommandée du CDN Tailwind CSS
+- Migration vers `https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4`
+
+### Prochaines Étapes Prévues
 - Implémentation du profil médecin avec téléchargement de diplômes
 - Gestion du profil patient avec carnet de santé
 - Création des tableaux de bord spécifiques aux rôles 
