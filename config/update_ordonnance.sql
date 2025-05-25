@@ -1,0 +1,1 @@
+ALTER TABLE `ordonnance` ADD COLUMN `signature` VARCHAR(255) DEFAULT NULL AFTER `instructions`; 

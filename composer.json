@@ -1,0 +1,26 @@
+{
+    "name": "medapp/medical-app",
+    "description": "Application de gestion médicale",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "vlucas/phpdotenv": "^5.5",
+        "google/apiclient": "^2.12.1",
+        "phpmailer/phpmailer": "^6.8",
+        "tecnickcom/tcpdf": "^6.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    },
+    "authors": [
+        {
+            "name": "MedConnect Team"
+        }
+    ],
+    "minimum-stability": "stable"
+}
